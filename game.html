@@ -1,0 +1,146 @@
+<!doctype html>  
+<html lang="en">  
+<head>
+
+<link rel="stylesheet" type="text/css" href="css/default.css">
+<link rel="stylesheet" type="text/css" href="css/normalize.css">
+<link rel="stylesheet" type="text/css" href="css/grid.css">
+
+
+<script src="/jquery/dist/jquery.js"></script>
+<script src="/socket.io/socket.io.js"></script>            
+
+<script src="js/engine.js" type="text/javascript"></script>
+<script src="js/animations.js" type="text/javascript"></script>
+<script src="js/game.js" type="text/javascript"></script>
+<script src="js/keyboard.js" type="text/javascript"></script>
+
+<script>
+	var socket = io('http://jsfighter.tk:4200');
+
+	function launchGame(){
+		var player_tag = document.getElementById('tag_1').value;
+		if (!player_tag) {
+			alert('You need to enter a player name!');
+		}
+		else {
+			$( ".container-1" ).fadeOut( "slow", function() {
+				console.log("Fadeout Complete");
+			});
+
+			console.log('Creating new match....');
+			socket.emit('newMatch', player_tag);
+			socket.on('newMatch', function(matchID){
+				console.log('Match ID = ' + matchID);
+				$("#matchID_show").text('Your match ID is: #' + matchID);
+	                        $( ".container-2" ).fadeIn( "slow", function() {
+        	                        console.log("Fadein Complete");
+                	        });
+
+			});
+		}
+	}
+
+        function connectGame() {
+		
+                var player_tag = document.getElementById('tag_2').value;
+                var matchID = document.getElementById('matchID').value;
+		console.log('Connecting to match ID ' + matchID + '...');
+
+                socket.emit('joinMatch',
+                        { player_tag: player_tag , matchID: matchID }
+                );
+
+        };
+
+	socket.on('alert', function(msg){
+		alert(msg);
+	});
+        socket.on('log', function(msg){
+                console.log(msg);
+        });
+
+        socket.on('initiate', function() {
+
+                $( "#loading_screens" ).fadeOut( "slow", function() {
+
+			$( ".container-3" ).fadeIn( "slow", function() { });
+			initGame();
+		});
+	});
+	socket.on('kill', function() {
+		$( ".container-3" ).fadeOut( "slow", function() {
+	 		$( ".container-1" ).css('display', 'none');
+
+			$("#matchID_show").text('Your opponent has disconnected!');
+			$("#matchMsg").text('You will want to navigate back to the home page and launch a new game.');
+
+	                $( "#loading_screens" ).fadeIn( "slow", function() { });
+	                $( ".container-2" ).fadeIn( "slow", function() { });
+		});
+	});
+
+</script>
+
+<title>jsFighter - connect to your friend</title>
+</head>
+<body>
+
+<div id="navigation">
+	<div class="buttons">
+		<a href="http://jsfighter.tk" class="active-link">Home</a>
+
+	</div>
+</div>
+<div id="game">
+	<center>
+	<br><br>
+	<img src="images/Street_Fighter_Logo.png" class="logo">
+	<br><br>
+	<hr>
+	<div id="loading_screens">
+	<div class="container">
+                <div class="container-1 clearfix">
+			<h1>Welcome to the fun!</h1>
+			<p>You are currently viewing the official jsFighter website!  You will find a re-make of the original Street Fighter game on this website.  The game is developed with Javascript, Node.js, and Socket.io . All images and sprites used within the re-making of this game are copyrighted and owned by <b><i>CapCom</b></i>, and are thus protected.  I do not claim ownership of any content originally created by the makers.  You can find more information on CapCom by clicking <a href="http://www.capcom.com">here</a>.</p>
+
+			<div class="col-1-2 matchmaker-1">
+				<h1>Create a new match</h1>
+				<br>
+				<p>Your player tag:</p><input type="text" name="tag_1" id="tag_1">
+				<br><br><input type="submit" name="launch" onclick="launchGame()" value="Launch game" class="button" id="launch">
+			<br>
+			</div>
+			
+			<div class="col-1-2 matchmaker-2">
+				<h1>Connect to your friend</h1>
+				<br>
+				<p>Your player tag:</p><input type="text" name="tag_2" id="tag_2">
+				<p>Your opponent's match ID:</p><input type="text" name="matchID" id="matchID">
+				<br><br><input type="submit" name="connect" onclick="connectGame()" value="Connect" class="button" id="connect">
+			<br>
+			</div>
+		</div>
+	</div>
+
+	<div class="container container-2">
+		<img src="images/loading.gif">
+		<h1 id="matchID_show">Your match ID is</h1>
+		<p id="matchMsg">You will want your friend to connect to <a href="http://jsfighter.tk">jsfighter.tk</a> and connect using this match ID number. Your game will launch once they have connected.</p>
+		<br>
+	</div>
+	</div>
+
+	<div style="background: url('images/background.png'); width: 898px; height: 512px;" class="container-3">
+		<canvas id="canvas" width="898" height="512"></canvas>
+	</div>
+
+	<hr>
+	<p>Please report all bugs to <b>willh@xniz-linux.com</b></p>
+
+	</center>
+
+</div>
+
+</body>
+</html>
